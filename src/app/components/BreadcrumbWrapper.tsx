@@ -9,15 +9,34 @@ const BreadcrumbWrapper = () => {
   if (pathname === "/") return null;
 
   return (
+  <div className="w-full border-b bg-white px-6 py-3 shadow-sm">
     <NextBreadcrumb
-      homeElement={"Home"}
-      separator={<span> {'>'} </span>}
-      activeClasses="text-amber-500"
-      containerClasses="flex py-5 bg-gradient-to-r from-purple-600 to-blue-600"
-      listClasses="hover:underline mx-2 font-bold"
+      homeElement={<span className="text-gray-600">Home</span>}
+      separator={<span className="mx-2 text-gray-400">{'>'}</span>}
+      activeClasses="text-amber-500 font-semibold"
+      containerClasses="flex items-center text-sm"
+      listClasses="hover:text-amber-500 transition-colors"
       capitalizeLinks
     />
-  );
+  </div>
+);
+
+//   return (
+//     <>
+//       <div className="breadcrumb-outer">
+//         <div className="breadcrumb-inner">
+//           <NextBreadcrumb
+//             homeElement={"Home"}
+//             separator={<span> {'>'} </span>}
+//             activeClasses="text-amber-500"
+//             containerClasses="flex"
+//             listClasses="hover:underline mx-1 font-bold"
+//             capitalizeLinks
+//           />
+//         </div>
+//       </div>
+//     </>
+//   );
 };
 
 export default BreadcrumbWrapper;

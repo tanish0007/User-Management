@@ -57,7 +57,7 @@ function ProfileBreadcrumb() {
   if (pathname === "/") return null;
 
   return (
-    <nav className="mb-5" aria-label="breadcrumb">
+    <nav className="absolute m-5 z-100" aria-label="breadcrumb">
       <ul className="flex items-center flex-wrap text-sm">
         <li className="text-gray-500 transition-colors hover:text-violet-600">
           <Link href="/" className="flex items-center gap-1">
@@ -218,7 +218,6 @@ export default function ProfilePage() {
 
   if (!mounted) return null;
 
-  // ─── Shared input class ──────────────────────────────────────────────────────
   const inputCls = (field: keyof ProfileDetails) =>
     `bg-[#f8f8fc] border rounded-xl text-[#1a1a2e] text-sm px-3 py-2.5 outline-none transition w-full ${
       errors[field]
@@ -227,13 +226,14 @@ export default function ProfilePage() {
     }`;
 
   return (
-    <div className="h-fit bg-[#f4f4f7] flex items-start justify-center px-4 py-12 font-sans text-[#1a1a2e]">
+    <div className="h-fit flex items-start justify-center px-4 py-12 font-sans text-[#1a1a2e]">
       <div className="w-full max-w-2xl">
         {/* Breadcrumb placed just above the card */}
-        <ProfileBreadcrumb />
 
         {/* Card */}
         <div className="bg-white border border-[#e0e0ee] rounded-3xl overflow-hidden shadow-sm">
+
+            <ProfileBreadcrumb />
           {/* Banner */}
           <div className="h-28 bg-linear-to-br from-[#ddd8f8] via-[#c8d8f8] to-[#b8d8f0] relative overflow-hidden">
             <div
@@ -306,7 +306,7 @@ export default function ProfilePage() {
 
               {/* Name + role */}
               <div className="flex-1 min-w-0 pb-1.5">
-                <div className="text-xl md:text-2xl font-bold text-[#1a1a2e] truncate">
+                <div className="text-xl md:text-2xl font-bold text-[#8a2be2] truncate">
                   {currentName}
                 </div>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                 {!editing ? (
                   <button
                     onClick={startEdit}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-violet-700 bg-violet-100 border border-violet-200 hover:bg-violet-200 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 mb-5 rounded-xl text-sm font-semibold text-violet-700 bg-violet-100 border border-violet-200 hover:bg-violet-200 transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M11.5 1.5a2.121 2.121 0 013 3L5 14H1v-4L11.5 1.5z" />
@@ -344,13 +344,13 @@ export default function ProfilePage() {
                   <>
                     <button
                       onClick={cancelEdit}
-                      className="px-4 py-2 rounded-xl text-sm font-semibold text-[#666] border border-[#d8d8ea] hover:text-[#333] hover:border-[#bbb] transition-colors"
+                      className="px-4 py-2 rounded-xl text-sm mb-5 font-semibold bg-white text-[#666] border border-[#d8d8ea] hover:text-[#333] hover:border-[#bbb] transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={saveEdit}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors shadow-sm"
+                      className="flex items-center gap-1.5 mb-5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors shadow-sm"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M13.5 2L6 11 2.5 7.5 1 9l5 5 9-11z" />

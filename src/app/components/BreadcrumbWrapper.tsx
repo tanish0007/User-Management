@@ -20,23 +20,6 @@ const BreadcrumbWrapper = () => {
     />
   </div>
 );
-
-//   return (
-//     <>
-//       <div className="breadcrumb-outer">
-//         <div className="breadcrumb-inner">
-//           <NextBreadcrumb
-//             homeElement={"Home"}
-//             separator={<span> {'>'} </span>}
-//             activeClasses="text-amber-500"
-//             containerClasses="flex"
-//             listClasses="hover:underline mx-1 font-bold"
-//             capitalizeLinks
-//           />
-//         </div>
-//       </div>
-//     </>
-//   );
 };
 
 export default BreadcrumbWrapper;

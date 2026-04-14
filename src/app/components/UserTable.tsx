@@ -1,8 +1,9 @@
+// src/app/components/UserTable.tsx
 "use client";
-import { Pencil, Trash2, Users, Search } from "lucide-react";
+import { Pencil, Trash2, Users, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import AgeBadge from "./AgeBadge";
 import Pagination from "./Pagination";
-import { User } from "@/types/user";
+import { User, SortField, SortOrder } from "@/types/user";
 
 const avatarColors = [
   "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
@@ -20,19 +21,46 @@ interface UserTableProps {
   totalPages: number;
   itemsPerPage: number;
   filteredCount: number;
+  sortField: SortField;
+  sortOrder: SortOrder;
+  onSort: (field: SortField) => void;
   onEdit: (user: User) => void;
   onDelete: (username: string) => void;
   onPrev: () => void;
   onNext: () => void;
 }
 
+// Renders the correct sort arrow for a column header
+function SortIcon({ field, sortField, sortOrder }: {
+  field: SortField;
+  sortField: SortField;
+  sortOrder: SortOrder;
+}) {
+  if (field !== sortField) {
+    // Column is not active — show neutral double chevron
+    return <ChevronsUpDown className="w-3.5 h-3.5 opacity-30" />;
+  }
+  // Active column — show direction arrow
+  return sortOrder === "asc"
+    ? <ChevronUp className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+    : <ChevronDown className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />;
+}
+
 export default function UserTable({
   allUsers, paginated, search,
   currentPage, totalPages, itemsPerPage, filteredCount,
+  sortField, sortOrder, onSort,
   onEdit, onDelete, onPrev, onNext,
 }: UserTableProps) {
   const startEntry = filteredCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endEntry = Math.min(currentPage * itemsPerPage, filteredCount);
+
+  // Columns that are sortable — maps label → SortField key
+  const sortableColumns: { label: string; field: SortField }[] = [
+    { label: "User",  field: "username" },
+    { label: "Email", field: "email" },
+    { label: "Age",   field: "age" },
+  ];
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
@@ -40,16 +68,31 @@ export default function UserTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-700/50">
-              {["User", "Email", "Age", "Actions"].map((h) => (
+              {sortableColumns.map(({ label, field }) => (
                 <th
-                  key={h}
-                  className={`px-6 py-3.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ${h === "Actions" ? "text-right pr-7" : "text-left"}`}
+                  key={field}
+                  className="px-6 py-3.5 text-left"
                 >
-                  {h}
+                  {/* Clickable header button */}
+                  <button
+                    onClick={() => onSort(field)}
+                    className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider
+                               text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400
+                               transition-colors group"
+                  >
+                    {label}
+                    <SortIcon field={field} sortField={sortField} sortOrder={sortOrder} />
+                  </button>
                 </th>
               ))}
+
+              {/* Actions column — not sortable */}
+              <th className="px-6 py-3.5 text-right pr-7 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-50 dark:divide-gray-700/60">
             {allUsers.length === 0 ? (
               <EmptyRow icon="users" message="No users yet" sub='Click "+ Add User" to get started' />
@@ -77,7 +120,7 @@ export default function UserTable({
                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{user.email}</td>
                     <td className="px-6 py-4"><AgeBadge age={user.age} /></td>
                     <td className="px-6 py-4 text-right">
-                      <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <div className="inline-flex items-center gap-1 opacity-100 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                         <button
                           onClick={() => onEdit(user)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-all"
@@ -101,6 +144,7 @@ export default function UserTable({
           </tbody>
         </table>
       </div>
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

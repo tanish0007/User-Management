@@ -21,21 +21,40 @@ export default function Home() {
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
 
   const importRef = useRef<HTMLDivElement | null>(null);
-const exportRef = useRef<HTMLDivElement | null>(null);
+  const exportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (importRef.current && !importRef.current.contains(e.target as Node)) {
+      if (importRef.current && !importRef.current.contains(e.target as Node))
         setImportDropdownOpen(false);
-      }
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node))
         setExportDropdownOpen(false);
-      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ── Sorting ──────────────────────────────────────────────────────────────────
+  /**
+   * Called when user clicks a column header.
+   * - Clicking a new column → switch to that column, reset to "asc"
+   * - Clicking the active column → toggle between "asc" and "desc"
+   */
+  const handleSort = (field: SortField) => {
+    if (field === state.sortField) {
+      // Toggle direction on the same column
+      dispatch({
+        type: "SET_SORT_ORDER",
+        payload: state.sortOrder === "asc" ? "desc" : "asc",
+      });
+    } else {
+      // Switch to new column, always start ascending
+      dispatch({ type: "SET_SORT_FIELD", payload: field });
+      dispatch({ type: "SET_SORT_ORDER", payload: "asc" });
+    }
+  };
+
+  // ── CRUD ─────────────────────────────────────────────────────────────────────
   const handleAddUser = () => { setEditUser(null); setFormOpen(true); };
   const handleEditUser = (user: User) => { setEditUser(user); setFormOpen(true); };
 
@@ -60,47 +79,36 @@ const exportRef = useRef<HTMLDivElement | null>(null);
     }
   };
 
+  // ── Import ───────────────────────────────────────────────────────────────────
   const handleImport = (format: ImportFormat) => {
     setImportDropdownOpen(false);
-
     const input = document.createElement("input");
     input.type = "file";
     input.accept = format === "csv" ? ".csv" : ".xlsx,.xls";
-
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-
       try {
         const result =
           format === "csv"
             ? await importFromCSV(file, state.users)
             : await importFromExcel(file, state.users);
-
-        // Persist merged list to state and localStorage
         dispatch({ type: "SET_USERS", payload: result.merged });
         localStorage.setItem("users", JSON.stringify(result.merged));
-
         toast.success(`${result.imported} imported, ${result.skipped} duplicates skipped`);
       } catch {
         toast.error(`Failed to parse ${format.toUpperCase()} file. Check format.`);
       }
     };
-
     input.click();
   };
 
+  // ── Export ───────────────────────────────────────────────────────────────────
   const handleExport = (format: ExportFormat) => {
     setExportDropdownOpen(false);
-
-    if (state.users.length === 0) {
-      toast.error("No users to export");
-      return;
-    }
-
+    if (state.users.length === 0) { toast.error("No users to export"); return; }
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `users_${timestamp}`;
-
     switch (format) {
       case "csv":
         exportToCSV(state.users, `${filename}.csv`);
@@ -121,13 +129,8 @@ const exportRef = useRef<HTMLDivElement | null>(null);
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar
         search={state.search}
-        sortField={state.sortField}
-        sortOrder={state.sortOrder}
         onSearchChange={(v) => dispatch({ type: "SET_SEARCH", payload: v })}
-        onSortFieldChange={(v: SortField) => dispatch({ type: "SET_SORT_FIELD", payload: v })}
-        onSortOrderChange={(v: SortOrder) => dispatch({ type: "SET_SORT_ORDER", payload: v })}
         onAddUser={handleAddUser}
-        // Pass dropdown state + handlers to Navbar
         importDropdownOpen={importDropdownOpen}
         exportDropdownOpen={exportDropdownOpen}
         onToggleImportDropdown={() => {
@@ -160,6 +163,9 @@ const exportRef = useRef<HTMLDivElement | null>(null);
           totalPages={totalPages}
           itemsPerPage={ITEMS_PER_PAGE}
           filteredCount={filteredSorted.length}
+          sortField={state.sortField}
+          sortOrder={state.sortOrder}
+          onSort={handleSort}
           onEdit={handleEditUser}
           onDelete={handleDeleteRequest}
           onPrev={() => dispatch({ type: "SET_PAGE", payload: state.currentPage - 1 })}

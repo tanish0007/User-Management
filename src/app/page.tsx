@@ -34,12 +34,7 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ── Sorting ──────────────────────────────────────────────────────────────────
-  /**
-   * Called when user clicks a column header.
-   * - Clicking a new column → switch to that column, reset to "asc"
-   * - Clicking the active column → toggle between "asc" and "desc"
-   */
+  
   const handleSort = (field: SortField) => {
     if (field === state.sortField) {
       // Toggle direction on the same column
@@ -54,7 +49,6 @@ export default function Home() {
     }
   };
 
-  // ── CRUD ─────────────────────────────────────────────────────────────────────
   const handleAddUser = () => { setEditUser(null); setFormOpen(true); };
   const handleEditUser = (user: User) => { setEditUser(user); setFormOpen(true); };
 

@@ -1,9 +1,10 @@
-// src/app/components/Navbar.tsx
 "use client";
 import { RefObject } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { ImportFormat } from "@/utils/importUsers";
 import { ExportFormat } from "@/utils/exportUsers";
+import Link from "next/link";
+import { User } from "lucide-react";
 
 interface NavbarProps {
   search: string;
@@ -36,9 +37,11 @@ export default function Navbar({
     <nav className="sticky top-0 z-30 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center gap-3">
 
+        <Link href="/profile"><User className="w-10 h-10 p-2 bg-blue-50 rounded-full text-blue-500 hover:border-2" /></Link>
+
         {/* Brand */}
         <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mr-auto">
-          👥 User Management
+          User Management
         </span>
 
         {/* Search */}

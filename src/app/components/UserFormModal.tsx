@@ -60,7 +60,6 @@ export default function UserFormModal({
 
     await new Promise((r) => setTimeout(r, 300));
 
-    // Empty field checks
     const emptyErrors: Record<string, string> = {};
     if (!formData.username.trim()) emptyErrors.username = "Username is required";
     if (!formData.email.trim()) emptyErrors.email = "Email is required";
@@ -71,7 +70,6 @@ export default function UserFormModal({
       return;
     }
 
-    // Duplicate checks
     const dupErrors: Record<string, string> = {};
     const others = isEditing
       ? existingUsers.filter((u) => u.username !== editUser!.username)
@@ -86,7 +84,6 @@ export default function UserFormModal({
       return;
     }
 
-    // Zod validation
     const result = userSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};

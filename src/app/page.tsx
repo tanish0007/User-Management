@@ -1,5 +1,6 @@
+// src/app/page.tsx
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import Navbar from "./components/Navbar";
 import UserTable from "./components/UserTable";
@@ -7,6 +8,8 @@ import UserFormModal from "./components/UserFormModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import { useUsers } from "@/hooks/useUsers";
 import { User, SortField, SortOrder } from "@/types/user";
+import { importFromCSV, importFromExcel, ImportFormat } from "@/utils/importUsers";
+import { exportToCSV, exportToExcel, exportToPDF, ExportFormat } from "@/utils/exportUsers";
 
 export default function Home() {
   const { state, dispatch, filteredSorted, paginated, totalPages, ITEMS_PER_PAGE } = useUsers();
@@ -14,15 +17,27 @@ export default function Home() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const handleAddUser = () => {
-    setEditUser(null);
-    setFormOpen(true);
-  };
+  const [importDropdownOpen, setImportDropdownOpen] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
 
-  const handleEditUser = (user: User) => {
-    setEditUser(user);
-    setFormOpen(true);
-  };
+  const importRef = useRef<HTMLDivElement | null>(null);
+const exportRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (importRef.current && !importRef.current.contains(e.target as Node)) {
+        setImportDropdownOpen(false);
+      }
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleAddUser = () => { setEditUser(null); setFormOpen(true); };
+  const handleEditUser = (user: User) => { setEditUser(user); setFormOpen(true); };
 
   const handleSave = (user: User) => {
     if (editUser) {
@@ -36,10 +51,7 @@ export default function Home() {
     setEditUser(null);
   };
 
-  const handleDeleteRequest = (username: string) => {
-    setDeleteTarget(username);
-  };
-
+  const handleDeleteRequest = (username: string) => setDeleteTarget(username);
   const handleDeleteConfirm = () => {
     if (deleteTarget) {
       dispatch({ type: "DELETE_USER", payload: deleteTarget });
@@ -48,46 +60,61 @@ export default function Home() {
     }
   };
 
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify(state.users, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "users.json";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Exported successfully");
-  };
+  const handleImport = (format: ImportFormat) => {
+    setImportDropdownOpen(false);
 
-  const handleImport = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".json";
-    input.onchange = (e) => {
+    input.accept = format === "csv" ? ".csv" : ".xlsx,.xls";
+
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const imported: User[] = JSON.parse(ev.target?.result as string);
-          const merged = [...state.users];
-          let added = 0;
-          for (const u of imported) {
-            if (!merged.find((x) => x.username === u.username || x.email === u.email)) {
-              merged.push(u);
-              added++;
-            }
-          }
-          dispatch({ type: "SET_USERS", payload: merged });
-          localStorage.setItem("users", JSON.stringify(merged));
-          toast.success(`Imported ${added} new user(s)`);
-        } catch {
-          toast.error("Invalid JSON file");
-        }
-      };
-      reader.readAsText(file);
+
+      try {
+        const result =
+          format === "csv"
+            ? await importFromCSV(file, state.users)
+            : await importFromExcel(file, state.users);
+
+        // Persist merged list to state and localStorage
+        dispatch({ type: "SET_USERS", payload: result.merged });
+        localStorage.setItem("users", JSON.stringify(result.merged));
+
+        toast.success(`${result.imported} imported, ${result.skipped} duplicates skipped`);
+      } catch {
+        toast.error(`Failed to parse ${format.toUpperCase()} file. Check format.`);
+      }
     };
+
     input.click();
+  };
+
+  const handleExport = (format: ExportFormat) => {
+    setExportDropdownOpen(false);
+
+    if (state.users.length === 0) {
+      toast.error("No users to export");
+      return;
+    }
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `users_${timestamp}`;
+
+    switch (format) {
+      case "csv":
+        exportToCSV(state.users, `${filename}.csv`);
+        toast.success(`Successfully exported to ${filename}.csv`);
+        break;
+      case "excel":
+        exportToExcel(state.users, `${filename}.xlsx`);
+        toast.success(`Successfully exported to ${filename}.xlsx`);
+        break;
+      case "pdf":
+        exportToPDF(state.users, `${filename}.pdf`);
+        toast.success(`Successfully exported to ${filename}.pdf`);
+        break;
+    }
   };
 
   return (
@@ -100,8 +127,21 @@ export default function Home() {
         onSortFieldChange={(v: SortField) => dispatch({ type: "SET_SORT_FIELD", payload: v })}
         onSortOrderChange={(v: SortOrder) => dispatch({ type: "SET_SORT_ORDER", payload: v })}
         onAddUser={handleAddUser}
+        // Pass dropdown state + handlers to Navbar
+        importDropdownOpen={importDropdownOpen}
+        exportDropdownOpen={exportDropdownOpen}
+        onToggleImportDropdown={() => {
+          setImportDropdownOpen((p) => !p);
+          setExportDropdownOpen(false);
+        }}
+        onToggleExportDropdown={() => {
+          setExportDropdownOpen((p) => !p);
+          setImportDropdownOpen(false);
+        }}
         onImport={handleImport}
         onExport={handleExport}
+        importRef={importRef}
+        exportRef={exportRef}
       />
 
       <main className="max-w-6xl mx-auto px-6 py-8">

@@ -20,7 +20,7 @@ export default function Pagination({
       <p className="text-xs text-gray-500 dark:text-gray-400">
         Showing{" "}
         <span className="font-semibold text-gray-700 dark:text-gray-200">
-          {startEntry}–{endEntry}
+          {startEntry}-{endEntry}
         </span>{" "}
         of{" "}
         <span className="font-semibold text-gray-700 dark:text-gray-200">

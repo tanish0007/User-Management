@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useMemo } from "react";
 import { User, UsersState, UsersAction, SortField, SortOrder } from "@/types/user";
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 5;
 
 const initialState: UsersState = {
   users: [],

@@ -56,7 +56,7 @@ function mergeUsers(existingUsers: User[], incoming: User[]): ImportResult {
 export function importFromCSV(file: File, existingUsers: User[]): Promise<ImportResult> {
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, unknown>>(file, {
-      header: true,          // uses first row as field names
+      header: true, // first row is header
       skipEmptyLines: true,
       transformHeader: (h) => h.trim().toLowerCase(), // normalise header casing
       complete: (results) => {

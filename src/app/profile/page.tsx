@@ -3,19 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
 
-// ─── Zod Schema ───────────────────────────────────────────────────────────────
 const profileSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
     .regex(/^[A-Za-z\s]+$/, "Name must contain only alphabets"),
   email: z.email("Enter a valid email address"),
-  role: z.enum(["user", "admin"], {
-    errorMap: () => ({ message: "Role must be 'user' or 'admin'" }),
-  }),
-  access: z.enum(["Full", "Limited"], {
-    errorMap: () => ({ message: "Access must be 'Full' or 'Limited'" }),
-  }),
+  role: z.enum(["user", "admin"], "Role must be 'user' or 'admin'"),
+  access: z.enum(["Full", "Limited"], "Access must be 'Full' or 'Limited'"),
   department: z
     .string()
     .min(1, "Department is required")
@@ -50,7 +45,6 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2) || "U";
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileDetails>(DEFAULT_PROFILE);
   const [editing, setEditing] = useState(false);
@@ -195,7 +189,7 @@ export default function ProfilePage() {
 
         <div className="px-6 md:px-9 pb-9">
           {/* Avatar row */}
-          <div className="flex flex-wrap items-end gap-4 -mt-11 mb-7">
+          <div className="flex flex-wrap items-end gap-4 -mt-11 mb-7 relative z-10">
 
             {/* Avatar */}
             <div className="relative shrink-0" ref={photoMenuRef}>

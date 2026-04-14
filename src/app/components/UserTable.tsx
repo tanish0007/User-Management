@@ -30,20 +30,17 @@ interface UserTableProps {
   onNext: () => void;
 }
 
-// Renders the correct sort arrow for a column header
 function SortIcon({ field, sortField, sortOrder }: {
   field: SortField;
   sortField: SortField;
   sortOrder: SortOrder;
 }) {
   if (field !== sortField) {
-    // Column is not active — show neutral double chevron
     return <ChevronsUpDown className="w-3.5 h-3.5 opacity-30" />;
   }
-  // Active column — show direction arrow
   return sortOrder === "asc"
-    ? <ChevronUp className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-    : <ChevronDown className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />;
+    ? <ChevronDown className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+    : <ChevronUp className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />;
 }
 
 export default function UserTable({
@@ -55,7 +52,6 @@ export default function UserTable({
   const startEntry = filteredCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endEntry = Math.min(currentPage * itemsPerPage, filteredCount);
 
-  // Columns that are sortable — maps label → SortField key
   const sortableColumns: { label: string; field: SortField }[] = [
     { label: "User",  field: "username" },
     { label: "Email", field: "email" },
@@ -73,12 +69,11 @@ export default function UserTable({
                   key={field}
                   className="px-6 py-3.5 text-left"
                 >
-                  {/* Clickable header button */}
                   <button
                     onClick={() => onSort(field)}
                     className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider
                                text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400
-                               transition-colors group"
+                               transition-colors group hover:cursor-pointer"
                   >
                     {label}
                     <SortIcon field={field} sortField={sortField} sortOrder={sortOrder} />
@@ -86,7 +81,6 @@ export default function UserTable({
                 </th>
               ))}
 
-              {/* Actions column — not sortable */}
               <th className="px-6 py-3.5 text-right pr-7 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
